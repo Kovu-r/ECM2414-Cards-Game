@@ -4,35 +4,24 @@
 // dependencies
 import ExceptionWrapper.*;
 
-
 public class Card {
 
-    private final int CardDenomination;
+    private final int DENOMINATION; // final makes card thread safe.
 
-
-    // constructor
+    // constructor takes denomination and handles cases
     public Card(int SerialisedCardDenomination) {
 
         // try setting card value
-
         if (SerialisedCardDenomination < 0) {
             // negative, throw exception, card denominator cannot be negative
             Exception NegetiveException = new NumberFormatException("Denomination number is negative");
             ExceptionWrapper.HandleException.NegetiveDenominationException(NegetiveException, SerialisedCardDenomination);
 
         }
-
-        CardDenomination = SerialisedCardDenomination;
-
-
+        DENOMINATION = SerialisedCardDenomination;
     }
-
-
-
 
     public int GetCardDenomination() {
-        return CardDenomination;
+        return DENOMINATION;
     }
-
-
 }
