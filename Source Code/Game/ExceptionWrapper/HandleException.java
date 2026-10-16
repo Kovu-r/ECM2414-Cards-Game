@@ -2,7 +2,7 @@
 // methods are static and the class itself is a util class
 
 // declare as package
-package ExceptionWrapper;
+package Game.ExceptionWrapper;
 
 // dependencies
 import java.io.*;
@@ -24,7 +24,7 @@ public class HandleException {
     }
 
     public static void FileNotFoundException(Exception Ex) {
-        System.out.println("[EXCEPTION] Card file was not found? is it located in the correct directory?");
+        System.out.println("[EXCEPTION] Game.Card file was not found? is it located in the correct directory?");
         for (StackTraceElement El : Thread.currentThread().getStackTrace()) {
             System.out.println(El.toString());
         }
@@ -34,7 +34,7 @@ public class HandleException {
     }
 
     public static void NegetiveDenominationException(Exception Ex, int SerialisedCardDenomination) {
-        System.out.println("[EXCEPTION] Serialised Card Denomination:"+ SerialisedCardDenomination + "from file was negetive? Should not be negetive.");
+        System.out.println("[EXCEPTION] Serialised Game.Card Denomination:"+ SerialisedCardDenomination + "from file was negetive? Should not be negetive.");
         for (StackTraceElement El : Thread.currentThread().getStackTrace()) {
             System.out.println(El.toString());
         }
@@ -44,7 +44,7 @@ public class HandleException {
     }
 
     public static void InvalidDenominationException(Exception Ex, String SerialisedCardDenomination) {
-        System.out.println("[EXCEPTION] Serialised Card Denomination:"+ SerialisedCardDenomination + "from file is not valid");
+        System.out.println("[EXCEPTION] Serialised Game.Card Denomination:"+ SerialisedCardDenomination + "from file is not valid");
         for (StackTraceElement El : Thread.currentThread().getStackTrace()) {
             System.out.println(El.toString());
         }
@@ -53,7 +53,7 @@ public class HandleException {
         System.exit(-1);
     }
     public static void InvalidPlayerCountException(Exception Ex, int PlayerCount) {
-        System.out.println("[EXCEPTION] Player Count:"+ PlayerCount + " Is not valid, two or more players are required to start the game");
+        System.out.println("[EXCEPTION] Game.Player Count:"+ PlayerCount + " Is not valid, two or more players are required to start the game");
         for (StackTraceElement El : Thread.currentThread().getStackTrace()) {
             System.out.println(El.toString());
         }

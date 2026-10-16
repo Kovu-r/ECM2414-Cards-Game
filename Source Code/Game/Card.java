@@ -1,8 +1,8 @@
-// Card class, contains card struct
+package Game;// Game.Card class, contains card struct
 // A card consists of a card denomination, dont need a setter a cards value is set when the game starts
 
 // dependencies
-import ExceptionWrapper.*;
+import Game.ExceptionWrapper.HandleException;
 
 public class Card {
 
@@ -15,7 +15,7 @@ public class Card {
         if (SerialisedCardDenomination < 0) {
             // negative, throw exception, card denominator cannot be negative
             Exception NegetiveException = new NumberFormatException("Denomination number is negative");
-            ExceptionWrapper.HandleException.NegetiveDenominationException(NegetiveException, SerialisedCardDenomination);
+            HandleException.NegetiveDenominationException(NegetiveException, SerialisedCardDenomination);
 
         }
         DENOMINATION = SerialisedCardDenomination;

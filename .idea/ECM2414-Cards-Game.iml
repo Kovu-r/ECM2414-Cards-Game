@@ -3,8 +3,8 @@
   <component name="NewModuleRootManager" inherit-compiler-output="true">
     <exclude-output />
     <content url="file://$MODULE_DIR$">
-      <sourceFolder url="file://$MODULE_DIR$/Compiled" isTestSource="true" />
       <sourceFolder url="file://$MODULE_DIR$/Source Code" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/Compiled/Tests" isTestSource="true" />
     </content>
     <orderEntry type="inheritedJdk" />
     <orderEntry type="sourceFolder" forTests="false" />
@@ -13,6 +13,16 @@
         <CLASSES>
           <root url="jar://$MODULE_DIR$/lib/junit-4.13.1.jar!/" />
           <root url="jar://$MODULE_DIR$/lib/hamcrest-core-1.3.jar!/" />
+        </CLASSES>
+        <JAVADOC />
+        <SOURCES />
+      </library>
+    </orderEntry>
+    <orderEntry type="module-library" scope="TEST">
+      <library name="JUnit4">
+        <CLASSES>
+          <root url="jar://$MAVEN_REPOSITORY$/junit/junit/4.13.1/junit-4.13.1.jar!/" />
+          <root url="jar://$MAVEN_REPOSITORY$/org/hamcrest/hamcrest-core/1.3/hamcrest-core-1.3.jar!/" />
         </CLASSES>
         <JAVADOC />
         <SOURCES />
