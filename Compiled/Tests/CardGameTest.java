@@ -1,59 +1,89 @@
+import Game.Card;
 import Game.CardGame;
 import Game.Player;
 
 import org.junit.Before;
 import org.junit.Test;
 
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.util.ArrayList;
+import java.util.Scanner;
+
 import static org.junit.Assert.*;
 
 public class CardGameTest {
 
+    private CardGame game;
+    private String testFileName;
+    private int playerCount;
+
     @Before
     public void setUp() throws Exception {
-        CardGame game = new CardGame();
+        game = new CardGame();
+        testFileName = "testPack";
+        game.generatePack(playerCount, testFileName);
     }
 
     @Test
     public void testCreatePlayerThreads() {
-        // TODO: Add initialised players when implemented
-        Player[] players = new Player[4];
-        Thread[] expectedPlayerThread = new Thread[4];
-        assertEquals(expectedPlayerThread, game.createPlayerThreads(4, players));
+        ArrayList<Card> cards1 = new ArrayList<Card>();
+        ArrayList<Card> cards2 = new ArrayList<Card>();
+
+        Player [] testPlayers = {new Player(0, cards1), new Player(1, cards2)};
+        Thread[] threads = game.createPlayerThreads(playerCount, testPlayers);
+        Thread[] expected = {new Thread(testPlayers[0]), new Thread(testPlayers[1])};
+        assertNotEquals(expected, threads);
     }
 
-    // TODO: Finish implementing File reading for values and name/location for overwrite.
+    @Test
+    public void testGenerateValidPackFile() {
+        Path testPath = Path.of(testFileName + ".txt");
+        assertTrue(Files.exists(testPath));
+    }
+
     @Test
     public void testGeneratePackSize() {
-        game.generatePack(4, "test_pack");
-
-    }
-
-    @Test
-    public void testGeneratePackFile() {
-        game.generatePack(4, "test_pack");
-
-    }
-
-    @Test
-    public void testGeneratePackRandom() {
-        game.generatePack(4, "test_pack");
-
+        ArrayList<Integer> packValues = new ArrayList<Integer>();
+        try (Scanner myReader = new Scanner(new File(testFileName + ".txt"))) {
+            packValues.add(myReader.nextInt());
+        } catch (FileNotFoundException e) {
+            System.out.println("An error occurred.");
+            e.printStackTrace();
+        }
+        assertEquals(8 * playerCount, packValues.size());
     }
 
     @Test
     public void testGeneratePackOverwrite() {
-        game.generatePack(4, "test_pack");
+        ArrayList<Integer> firstPackValues = new ArrayList<Integer>();
+        try (Scanner myReader = new Scanner(new File(testFileName + ".txt"))) {
+            firstPackValues.add(myReader.nextInt());
+        } catch (FileNotFoundException e) {
+            System.out.println("An error occurred.");
+            e.printStackTrace();
+        }
+
+        // Overwrites file with new larger deck in same location.
+        game.generatePack(4, testFileName);
+        Path testPath = Path.of(testFileName + ".txt");
+
+        ArrayList<Integer> secondPackValues = new ArrayList<Integer>();
+        try (Scanner myReader = new Scanner(new File(testFileName + ".txt"))) {
+            secondPackValues.add(myReader.nextInt());
+        } catch (FileNotFoundException e) {
+            System.out.println("An error occurred.");
+            e.printStackTrace();
+        }
+
+        //assertNotEquals();
 
     }
 
-    // TODO: replicate anything external, simulate behaviour of objects/pack.
     @Test
     public void testDistributePackObjectQuantities() {
-
-    }
-
-    @Test
-    public void testDistributePackObjectTypes() {
 
     }
 }

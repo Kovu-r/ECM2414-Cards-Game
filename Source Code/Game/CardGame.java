@@ -1,10 +1,8 @@
 package Game;// Imports //
 import Game.ExceptionWrapper.HandleException;
 
-import java.util.ArrayList;
-import java.util.Stack;
+import java.util.*;
 
-import java.util.Scanner; // java built in utilities
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
@@ -13,8 +11,10 @@ import java.io.FileNotFoundException;
 // Game class is entry point, takes number of players as input, creates and starts player threads.
 public class CardGame {
 
+    public CardGame() {}
+
     // Helper creates array of new started threads for each player, given input count.
-    static Thread[] createPlayerThreads(int playerCount, Player[] players) {
+    public static Thread[] createPlayerThreads(int playerCount, Player[] players) {
         Thread[] playerThreads = new Thread[playerCount];
         for(int i = 0; i < playerCount; i++) {
             playerThreads[i] = new Thread(players[i]);
@@ -24,44 +24,80 @@ public class CardGame {
     }
 
     // Generates new file with pack, writing to sets of 4 same cards ranging from 1 to 2n.
-    static void generatePack(int numPlayers, String fileName) {
+    public void generatePack(int numPlayers, String fileName) {
         try {
             FileWriter myWriter = new FileWriter(fileName + ".txt");
             for (int i = 0; i < 2 * numPlayers; i++) {
-                // TODO: Test first, then make random.
                 for (int j = 0; j < 4; j++) {myWriter.write(i);}
             }
             myWriter.close();  // must close manually
         } catch (IOException e) {
             e.printStackTrace();
         }
-        // Writes to pack file in random order, ensuring values are shuffled before being distributed.
     }
 
-    // Helper reads pack file, distributing Cards to Players and CardDecks.
-    static void distributePack(String packFileName, int playerCount) {
-        int counter = 0; // Counter keeps track of every 4 cards ending up in new hand/deck.
+    Integer [] loadPack(String filePath, int playerCount) {
+        Integer[] cards = new Integer[8 * playerCount];
 
-        Player[] players = new Player[playerCount];
-        CardDeck[] cardDecks = new CardDeck[playerCount];
+        int counter = 0;
 
-        // TODO: implement temporary ArrayList and stack to populate constructors.
-
-        try (Scanner myReader = new Scanner(new File(packFileName + ".txt"))) {
-            while (myReader.hasNextLine()) {
-                if (counter % 4 == 0) {
-                    //players[i] = new Game.Player(i);
-                    //cardDecks[i] = new Game.CardDeck(i);
-                }
-            }
+        // Reads in cards from file.
+        try (Scanner myReader = new Scanner(new File(filePath + ".txt"))) {
+            cards[counter] = myReader.nextInt();
+            counter++;
         } catch (FileNotFoundException e) {
             System.out.println("An error occurred.");
             e.printStackTrace();
         }
+        return cards;
+    }
 
+    // Takes integer to use collection shuffle method.
+    Integer [] shuffleCards(Integer[] cards) {
+        List<Integer> l = Arrays.asList(cards);
+        Collections.shuffle(l);
+        cards = l.toArray(new Integer[0]);
+        return cards;
+    }
+
+
+    // Helper reads pack file, distributing Cards to Players and CardDecks.
+     Player[] distributePack(String packFileName, int playerCount) {
+        Player[] players = new Player[playerCount];
+        CardDeck[] cardDecks = new CardDeck[playerCount];
+        Integer [] cards = shuffleCards(loadPack(packFileName, playerCount));
+
+        // Keeps track of cards in card array when adding to objects.
+        int cardCounter = 0;
+        for (int i = 0; i < 2 * playerCount; i++) {
+
+            // Adds new cards to stack, creating deck objects.
+            if (i % 2 == 0) {
+                Stack<Card> deckCards = new Stack<Card>();
+                for (int j = 0; j < 4; j++) {
+                    deckCards.push(new Card(cards[cardCounter]));
+                    cardCounter++;
+                }
+                int deckNumber = i/2;
+                cardDecks[deckNumber] = new CardDeck(deckNumber, deckCards);
+            }
+            // Adds new cards to list, creating player objects.
+            else {
+                ArrayList<Card> handCards = new ArrayList<Card>();
+                for (int j = 0; j < 4; j++) {
+                    handCards.add(new Card(cards[cardCounter]));
+                    cardCounter++;
+                }
+                int playerNumber = i/2;
+                players[playerNumber] = new Player(playerNumber, handCards);
+            }
+        }
+        // Used to create threads for players.
+        return players;
     }
 
     public static void main(String[] args) {
+        CardGame game = new CardGame();
 
         System.out.println("Welcome to Game.CardGame\n");
         System.out.println("Please input the number of players:");
@@ -86,26 +122,19 @@ public class CardGame {
         }
 
         System.out.println("Please input the card pack filename:");
-        String packName = "";
-        try {
-            packName = Input.nextLine();
-        } catch (Exception e){
-            // TODO: handle invalid file name
+        String packName = Input.nextLine();
+        try (Scanner myReader = new Scanner(new File(packName + ".txt"))) {
+        } catch (FileNotFoundException e) {
+            System.out.println("Please input a valid filename:");
+            e.printStackTrace();
         }
 
-        generatePack(plrCount, packName);
-
-        // Calls helper function to spawn threads, keeps list for debugging/testing.
-        distributePack(packName, plrCount);
-        //Thread[] PlayerThreads = createPlayerThreads(plrCount, players);
+        game.generatePack(plrCount, packName);
+        Player[] players = game.distributePack(packName, plrCount); // returns players to start threads
+        Thread[] PlayerThreads = createPlayerThreads(plrCount, players);
 
 
         // TODO: add end condition triggered by thread, writes to deck files and outputs
     }
 
 }
-
-
-
-
-
