@@ -26,9 +26,23 @@ public class CardDeck {
     }
     public int GetDeckNumber() { return this.deckNumber; }
 
-
-
     public synchronized Card DrawCard() {
+        if (cards.isEmpty()) {
+            System.out.println("[DEBUG] No cards in this Deck, ?");
+            Thread.dumpStack();
+
+            throw new IllegalStateException("No cards in Deck " + deckNumber);
+
+        }
+
+        Card Drawn = cards.removeFirst();
+
+        //System.out.println("[DEBUG] Drew " + Drawn.GetCardDenomination() + " from deck " + deckNumber + "; " + cards.size() + " cards remain");
+
+        return Drawn;
+    }
+
+    /*public synchronized Card DrawCard() {
         if (cards.isEmpty()) {
             Exception EmptyDeckException = new NullPointerException();
             HandleException.EmptyDeckException(EmptyDeckException);
@@ -36,10 +50,11 @@ public class CardDeck {
         return cards.removeFirst(); // can use .remove(0) , 0 being the first index for FIFO behaviour, this is due to a stack being LIFO, to keep the
         // implementation consistent without rewriting too much code, use the stack data structure
 
-    }
+    }*/
 
     public synchronized void DiscardCard(Card C) {
         if (C == null) {
+            System.out.println("[DEBUG] You cannot discard a null card!");
             NullPointerException NullPointerException = new NullPointerException();
             HandleException.CardNotFoundException(NullPointerException);
         }

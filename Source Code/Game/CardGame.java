@@ -17,6 +17,7 @@ public class CardGame {
     private final AtomicBoolean GameFinished = new AtomicBoolean(false); // atomic boolean, multiple thread read and write safe
     private final AtomicInteger PlayerUUIDWon = new AtomicInteger(0);
     private CardDeck[] cardDecks;
+    private Player[] players; // keep private refrences in this class to be able to cleanup properly
 
     public CardGame() {}
 
@@ -37,22 +38,23 @@ public class CardGame {
         for(int i = 0; i < PlayerCount; i++) {
             Players[i] = new Player(i + 1, Hands.get(i), cardDecks[i], cardDecks[(i + 1) % PlayerCount],SharedLock, GameFinished, PlayerUUIDWon);
         }
-
+        this.players = Players; // assign to local copy
         return Players;
     }
 
     // Generates new file with pack, writing to sets of 4 same cards ranging from 1 to 2n.
-   /* public void generatePack(int numPlayers, String fileName) {
+    public static void generatePack(int numPlayers, String fileName) {
         try {
             FileWriter myWriter = new FileWriter(fileName + ".txt");
             for (int i = 0; i < 2 * numPlayers; i++) {
-                for (int j = 0; j < 4; j++) {myWriter.write(i);}
+
+                for (int j = 0; j < 4; j++) {myWriter.write(String.valueOf(i + 1)); myWriter.write(System.lineSeparator()); }
             }
             myWriter.close();  // must close manually
         } catch (IOException e) {
             e.printStackTrace();
         }
-    }*/
+    }
 
     Integer [] loadPack(String filePath, int playerCount) throws IOException {
         Integer[] Pack = new Integer[8 * playerCount];
@@ -63,7 +65,7 @@ public class CardGame {
         try (Scanner myReader = new Scanner(new File(filePath + ".txt"))) {
             while (myReader.hasNextLine()) {
                 String CurrentLine = myReader.nextLine().trim(); // correction, to read and update all values in loadpack rather than one, counter didnt increment.
-                                                                // better error handling added.
+                // better error handling added.
 
                 if (CurrentLine.equals("")) { // found an empty line, throw exec
                     Exception EmptyLineException = new Exception();
@@ -97,9 +99,9 @@ public class CardGame {
             }
             //Pack[counter] = myReader.nextInt();
             //counter++;
-        //} catch (FileNotFoundException e) {
-         //   System.out.println("An error occurred."); // ?, use ExceptionWrapper.HandleException.FileNotFoundException, already throws IOException
-        //    e.printStackTrace();
+            //} catch (FileNotFoundException e) {
+            //   System.out.println("An error occurred."); // ?, use ExceptionWrapper.HandleException.FileNotFoundException, already throws IOException
+            //    e.printStackTrace();
         }
 
         if (counter == Pack.length) {
@@ -128,20 +130,22 @@ public class CardGame {
     // each player needs a previous and next deck where next deck is numbered as n where n is the player number
     // constructor needs more arguments
      */
-     Player[] distributePack(String packFileName, int playerCount) throws IOException {
+    Player[] distributePack(String packFileName, int playerCount) throws IOException {
         Player[] players = new Player[playerCount];
         cardDecks = new CardDeck[playerCount];
         Integer [] cards = shuffleCards(loadPack(packFileName, playerCount));
 
+
         // Keeps track of cards in card array when adding to objects.
         int cardCounter = 0;
-         ArrayList<ArrayList<Card>> AllPlayerHands = new ArrayList<>();
+        ArrayList<ArrayList<Card>> AllPlayerHands = new ArrayList<>();
 
         for (int i = 0; i < playerCount; i++) {
             // foreach player in game
             ArrayList<Card> PlayerHand = new ArrayList<>();
             for (int x = 0; x < 4; x++) {
                 // for each card in hand
+
                 PlayerHand.add(new Card(cards[cardCounter])); // construct a new card from int[n] cards
                 cardCounter++;
             }
@@ -155,11 +159,18 @@ public class CardGame {
             // foreach deck in game
             for (int y = 0; y < 4; y++ ) {
                 // foreach card in deck
-                deckCards.add(new Card(cards[cardCounter])); // construct a new card from the int[n] cards array
+                //System.out.println(cardCounter);
+                Card NewCard = new Card(cards[cardCounter]);
+                deckCards.add(NewCard); // construct a new card from the int[n] cards array
                 cardCounter++;
             }
 
             cardDecks[j] = new CardDeck(j + 1, deckCards);
+        }
+
+        for (CardDeck Deck : cardDecks) {
+            //System.out.println("[DEBUG] Deck: " + Deck.GetDeckNumber() + " initialised with " + Deck.GetDeckSize() + " Cards");
+
         }
 
 
@@ -194,14 +205,15 @@ public class CardGame {
         CardGame game = new CardGame();
 
         System.out.println("Welcome to Game.CardGame\n");
-        //System.out.println("Please input the number of players:");
+
 
         Scanner Input = new Scanner(System.in);
-        String NumberOfPlayers = Input.nextLine();
         int plrCount = 0;
 
         while (plrCount < 2) {
             System.out.println("Please input the number of players:");
+            String NumberOfPlayers = Input.nextLine();
+            //System.out.println("Please input the number of players:");
             // Converts number of players to int, handles type and value exceptions.
             try {
                 plrCount = Integer.parseInt(NumberOfPlayers);
@@ -220,19 +232,19 @@ public class CardGame {
             }
         }
 
-
-        System.out.println("Please input the card pack filename:");
+        System.out.println("[AUTOGENERATING PACK FILE]");
+        /*System.out.println("Please input the card pack filename:");
         String packName = Input.nextLine();
         try (Scanner myReader = new Scanner(new File(packName + ".txt"))) {
         } catch (FileNotFoundException e) {
             System.out.println("Please input a valid filename:");
             e.printStackTrace();
-        }
+        }*/
 
         // ask for valid files
         Player[] Players = null;
 
-        while (Players == null) {
+        /*while (Players == null) {
             System.out.println("Please input the name (without extension) of the card pack file, make sure it is located in the same directory as this jar file.");
             String cardPackName = Input.nextLine();
 
@@ -244,7 +256,17 @@ public class CardGame {
 
             }
 
+        }*/
+        // auto pass from generated.
+
+        CardGame.generatePack(plrCount, "Generatedpack");
+        try {
+            Players = game.distributePack("Generatedpack", plrCount);
+        } catch (IOException e) {
+            HandleException.InvalidPackSizeException(e, plrCount);
         }
+
+
 
         Thread[] PlayerThreads = createPlayerThreads(plrCount, Players);
 
@@ -273,11 +295,20 @@ public class CardGame {
 
     public void Cleanup() {
         // when the game has finished, cleanup and write to output files
+
+        int WinningPlrUUID = PlayerUUIDWon.get(); // get the winning player
+
+        // write logs
+        for (Player plr : players) {
+            plr.StreamLogsToOutputFile(WinningPlrUUID);
+        }
+
+
         for (CardDeck deckofcards : cardDecks) {
             String FileName = "deck" + deckofcards.GetDeckNumber() + "_output.txt";
 
             try (FileWriter Writer_ = new FileWriter(FileName)) {
-                Writer_.write("deck output:");
+                Writer_.write("deck" + deckofcards.GetDeckNumber() + " contents:");
 
                 for (Card card : deckofcards.GetCurrentCards()) {
                     Writer_.write(" " + card.GetCardDenomination());
