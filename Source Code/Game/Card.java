@@ -18,7 +18,7 @@ public class Card {
             HandleException.NegetiveDenominationException(NegetiveException, SerialisedCardDenomination);
 
         }
-        DENOMINATION = SerialisedCardDenomination;
+        this.DENOMINATION = SerialisedCardDenomination;
     }
 
     public int GetCardDenomination() {
