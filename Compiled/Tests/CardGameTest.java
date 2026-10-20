@@ -24,6 +24,7 @@ public class CardGameTest {
     @Before
     public void setUp() throws Exception {
         game = new CardGame();
+        playerCount = 4; // initialise count
         testFileName = "testPack";
         playerCount = 4;
         game.generatePack(playerCount, testFileName);
@@ -96,6 +97,7 @@ public class CardGameTest {
                 decksShuffled = true;
             }
         }
+
         assertEquals(true, decksShuffled);
         assertEquals(true, handsShuffled);
     }
