@@ -6,12 +6,10 @@ import Game.CardDeck;
 import org.junit.Before;
 import org.junit.Test;
 
-import java.io.File;
-import java.io.FileNotFoundException;
+import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
-import java.util.Scanner;
 import java.util.Stack;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -64,8 +62,44 @@ public class CardGameTest {
         assertTrue(Files.exists(testPath));
     }
 
+    @Test // test that cards are shuffled and distributed to all hands/decks correctly
+    public void testDistributePack() throws IOException {
+        game.distributePack(testFileName, playerCount);
+        int hand_size = game.getHAND_DECK_SIZE();
+        // creates an array of arraylists to compare to array of hands or decks.
+        ArrayList<Integer> [] unshuffledValues = new ArrayList[playerCount];
+
+        // create array of unshuffled values
+        for (int i = 0; i < playerCount; i++) {
+            unshuffledValues[i] = new ArrayList<Integer>();
+            for (int j = 0; j < hand_size; j++) {
+                unshuffledValues[i].add(i);
+            }
+        }
+
+        CardDeck[] distributedDecks = game.getCardDecks();
+        Player[] distributedPlayers = game.getPlayers();
+
+        boolean decksShuffled = false;
+        boolean handsShuffled = false;
+        for (int i = 0; i < playerCount; i++) {
+            assertEquals(hand_size, distributedDecks[i].getCards().size());
+            assertEquals(distributedPlayers[i].GetHand().size(), hand_size);
+            if (!(distributedPlayers[i].equals(unshuffledValues[i]))) {
+                handsShuffled = true;
+            }
+
+            ArrayList deckArray = new ArrayList(distributedDecks[i].getCards());
+            if (!(deckArray).equals(unshuffledValues[i])) {
+                decksShuffled = true;
+            }
+        }
+        assertEquals(true, decksShuffled);
+        assertEquals(true, handsShuffled);
+    }
+
     @Test
-    public void testDistributePack() {
+    public void testCleanUp() {
 
     }
 

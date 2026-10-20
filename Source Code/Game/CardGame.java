@@ -1,13 +1,10 @@
 package Game;// Imports //
 import Game.ExceptionWrapper.HandleException;
 
-import javax.annotation.processing.FilerException;
 import java.util.*;
-
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
-import java.io.FileNotFoundException;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 
@@ -17,9 +14,23 @@ public class CardGame {
     private final AtomicBoolean GameFinished = new AtomicBoolean(false); // atomic boolean, multiple thread read and write safe
     private final AtomicInteger PlayerUUIDWon = new AtomicInteger(0);
     private CardDeck[] cardDecks;
-    private Player[] players; // keep private refrences in this class to be able to cleanup properly
+    private Player[] players; // keep private references in this class to be able to cleanup properly
+    private final int HAND_DECK_SIZE = 4;
 
     public CardGame() {}
+
+    // Simple getters used for unit tests.
+    public CardDeck[] getCardDecks() {
+        return cardDecks;
+    }
+
+    public Player[] getPlayers() {
+        return players;
+    }
+
+    public int getHAND_DECK_SIZE() {
+        return HAND_DECK_SIZE;
+    }
 
     // Helper creates array of new started threads for each player, given input count.
     public static Thread[] createPlayerThreads(int playerCount, Player[] players) {
@@ -32,7 +43,7 @@ public class CardGame {
     }
 
     // Initialise all players
-    public Player[] InitialisePlayers(int PlayerCount, ArrayList<ArrayList<Card>> Hands, CardDeck[] cardDecks) {
+    public Player[] initialisePlayers(int PlayerCount, ArrayList<ArrayList<Card>> Hands, CardDeck[] cardDecks) {
         Player[] Players = new Player[PlayerCount];
         Object SharedLock = new Object();
         for(int i = 0; i < PlayerCount; i++) {
@@ -47,18 +58,15 @@ public class CardGame {
         Integer[] cardValues = new Integer[8 * numPlayers];
         // Populates with predetermined cards, shuffles and then adds from array before writing.
         for (int i = 0; i < 2 * numPlayers; i++) {
-            for (int j = 0; j < 4; j++) {cardValues[i * 4 + j] = j + 1;}
+            for (int j = 0; j < HAND_DECK_SIZE; j++) {cardValues[i * 4 + j] = j + 1;}
         }
         shuffleCards(cardValues);
         try {
             FileWriter myWriter = new FileWriter(fileName + ".txt");
             for (int i = 0; i < 2 * numPlayers; i++) {
 
-                for (int j = 0; j < 4; j++) {myWriter.write(String.valueOf(cardValues[i * 4 + j])); myWriter.write(System.lineSeparator()); }
+                for (int j = 0; j < HAND_DECK_SIZE; j++) {myWriter.write(String.valueOf(cardValues[i * 4 + j])); myWriter.write(System.lineSeparator()); }
             }
-
-
-
             myWriter.close();  // must close manually
         } catch (IOException e) {
             e.printStackTrace();
@@ -125,7 +133,6 @@ public class CardGame {
         return cards;
     }
 
-
     // Helper reads pack file, distributing Cards to Players and CardDecks.
 
     /* modifications
@@ -134,7 +141,7 @@ public class CardGame {
     // each player needs a previous and next deck where next deck is numbered as n where n is the player number
     // constructor needs more arguments
      */
-    Player[] distributePack(String packFileName, int playerCount) throws IOException {
+    public Player[] distributePack(String packFileName, int playerCount) throws IOException {
         Player[] players = new Player[playerCount];
         cardDecks = new CardDeck[playerCount];
         Integer [] cards = shuffleCards(loadPack(packFileName, playerCount));
@@ -147,7 +154,7 @@ public class CardGame {
         for (int i = 0; i < playerCount; i++) {
             // foreach player in game
             ArrayList<Card> PlayerHand = new ArrayList<>();
-            for (int x = 0; x < 4; x++) {
+            for (int j = 0; j < HAND_DECK_SIZE; j++) {
                 // for each card in hand
 
                 PlayerHand.add(new Card(cards[cardCounter])); // construct a new card from int[n] cards
@@ -158,10 +165,10 @@ public class CardGame {
 
         }
 
-        for (int j = 0; j < playerCount; j++) {
+        for (int i = 0; i < playerCount; i++) {
             Stack<Card> deckCards = new Stack<>();
             // foreach deck in game
-            for (int y = 0; y < 4; y++ ) {
+            for (int j = 0; j < HAND_DECK_SIZE; j++ ) {
                 // foreach card in deck
                 //System.out.println(cardCounter);
                 Card NewCard = new Card(cards[cardCounter]);
@@ -169,40 +176,14 @@ public class CardGame {
                 cardCounter++;
             }
 
-            cardDecks[j] = new CardDeck(j + 1, deckCards);
+            cardDecks[i] = new CardDeck(i + 1, deckCards);
         }
 
-        for (CardDeck Deck : cardDecks) {
+        //for (CardDeck Deck : cardDecks) {
             //System.out.println("[DEBUG] Deck: " + Deck.GetDeckNumber() + " initialised with " + Deck.GetDeckSize() + " Cards");
+        //}
 
-        }
-
-
-        /*for (int i = 0; i < 2 * playerCount; i++) {
-
-            // Adds new cards to stack, creating deck objects.
-            if (i % 2 == 0) {
-                Stack<Card> deckCards = new Stack<Card>();
-                for (int j = 0; j < 4; j++) {
-                    deckCards.push(new Card(cards[cardCounter]));
-                    cardCounter++;
-                }
-                int deckNumber = i/2;
-                cardDecks[deckNumber] = new CardDeck(deckNumber, deckCards);
-            }
-            // Adds new cards to list, creating player objects.
-            else {
-                ArrayList<Card> handCards = new ArrayList<Card>();
-                for (int j = 0; j < 4; j++) {
-                    handCards.add(new Card(cards[cardCounter]));
-                    cardCounter++;
-                }
-                int playerNumber = i/2;
-                players[playerNumber] = new Player(playerNumber, handCards);
-            }
-        }*/
-        // Used to create threads for players.
-        return InitialisePlayers(playerCount, AllPlayerHands, cardDecks); // initialise the players and return
+        return initialisePlayers(playerCount, AllPlayerHands, cardDecks); // initialise the players and return
     }
 
     public static void main(String[] args) {
@@ -236,7 +217,6 @@ public class CardGame {
             }
         }
 
-
         /*System.out.println("Please input the card pack filename:");
         String packName = Input.nextLine();
         try (Scanner myReader = new Scanner(new File(packName + ".txt"))) {
@@ -244,7 +224,6 @@ public class CardGame {
             System.out.println("Please input a valid filename:");
             e.printStackTrace();
         }*/
-
 
         boolean Decided = false;
         Player[] Players = null;
@@ -286,8 +265,6 @@ public class CardGame {
             }
         }
 
-
-
         Thread[] PlayerThreads = createPlayerThreads(plrCount, Players);
 
         for (Thread t : PlayerThreads) {
@@ -300,20 +277,12 @@ public class CardGame {
             }
         }
 
-        //game.generatePack(plrCount, packName);
-        //Player[] players = game.distributePack(packName, plrCount); // returns players to start threads
-        // hread[] PlayerThreads = createPlayerThreads(plrCount, players);
-
-
-        //* TODO: add end condition triggered by thread, writes to deck files and outputs */
-        // added
-
         // all player threads have finished, cleanup
-        game.Cleanup();
+        game.cleanup();
 
     }
 
-    public void Cleanup() {
+    public void cleanup() {
         // when the game has finished, cleanup and write to output files
 
         int WinningPlrUUID = PlayerUUIDWon.get(); // get the winning player
@@ -322,7 +291,6 @@ public class CardGame {
         for (Player plr : players) {
             plr.StreamLogsToOutputFile(WinningPlrUUID);
         }
-
 
         for (CardDeck deckofcards : cardDecks) {
             String FileName = "deck" + deckofcards.GetDeckNumber() + "_output.txt";
@@ -339,13 +307,11 @@ public class CardGame {
 
             } catch (IOException e) {
                 HandleException.WriteStreamIOException(e);
-
             }
         }
 
         System.out.println("The game has been terminated.");
         System.exit(0); // 0, OK
-
     }
 
 }
