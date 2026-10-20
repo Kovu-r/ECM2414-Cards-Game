@@ -43,13 +43,22 @@ public class CardGame {
     }
 
     // Generates new file with pack, writing to sets of 4 same cards ranging from 1 to 2n.
-    public static void generatePack(int numPlayers, String fileName) {
+    public void generatePack(int numPlayers, String fileName) {
+        Integer[] cardValues = new Integer[8 * numPlayers];
+        // Populates with predetermined cards, shuffles and then adds from array before writing.
+        for (int i = 0; i < 2 * numPlayers; i++) {
+            for (int j = 0; j < 4; j++) {cardValues[i * 4 + j] = j + 1;}
+        }
+        shuffleCards(cardValues);
         try {
             FileWriter myWriter = new FileWriter(fileName + ".txt");
             for (int i = 0; i < 2 * numPlayers; i++) {
 
-                for (int j = 0; j < 4; j++) {myWriter.write(String.valueOf(i + 1)); myWriter.write(System.lineSeparator()); }
+                for (int j = 0; j < 4; j++) {myWriter.write(String.valueOf(cardValues[i * 4 + j])); myWriter.write(System.lineSeparator()); }
             }
+
+
+
             myWriter.close();  // must close manually
         } catch (IOException e) {
             e.printStackTrace();
@@ -97,11 +106,6 @@ public class CardGame {
                 counter++;
 
             }
-            //Pack[counter] = myReader.nextInt();
-            //counter++;
-            //} catch (FileNotFoundException e) {
-            //   System.out.println("An error occurred."); // ?, use ExceptionWrapper.HandleException.FileNotFoundException, already throws IOException
-            //    e.printStackTrace();
         }
 
         if (counter == Pack.length) {
@@ -114,7 +118,7 @@ public class CardGame {
     }
 
     // Takes integer to use collection shuffle method.
-    Integer [] shuffleCards(Integer[] cards) {
+     Integer [] shuffleCards(Integer[] cards) {
         List<Integer> l = Arrays.asList(cards);
         Collections.shuffle(l);
         cards = l.toArray(new Integer[0]);
@@ -259,7 +263,7 @@ public class CardGame {
         }*/
         // auto pass from generated.
 
-        CardGame.generatePack(plrCount, "Generatedpack");
+        game.generatePack(plrCount, "Generatedpack");
         try {
             Players = game.distributePack("Generatedpack", plrCount);
         } catch (IOException e) {
