@@ -271,7 +271,6 @@ public class Player implements Runnable {
                 return;
             }
 
-
             /*if (!GameFinished.get()) {
                 if (!GameFinished.get() && HasWon()) {
                     System.out.println("Player " + this.InitialisationPlayerUUID + " has won the game! (with their initial hand)");

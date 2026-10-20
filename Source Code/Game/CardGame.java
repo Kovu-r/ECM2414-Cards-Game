@@ -236,7 +236,7 @@ public class CardGame {
             }
         }
 
-        System.out.println("[AUTOGENERATING PACK FILE]");
+
         /*System.out.println("Please input the card pack filename:");
         String packName = Input.nextLine();
         try (Scanner myReader = new Scanner(new File(packName + ".txt"))) {
@@ -245,29 +245,45 @@ public class CardGame {
             e.printStackTrace();
         }*/
 
-        // ask for valid files
+
+        boolean Decided = false;
         Player[] Players = null;
 
-        /*while (Players == null) {
-            System.out.println("Please input the name (without extension) of the card pack file, make sure it is located in the same directory as this jar file.");
-            String cardPackName = Input.nextLine();
+        while(!Decided) {
+            System.out.println("Would you like to generate a pack file for the game or would you like to provide one? enter 1 for autogen or 2 to provide a file");
+            String Decision = Input.nextLine();
+            if(Decision.equals("1")) {
+                // auto generate a pack file
+                System.out.println("[AUTOGENERATING PACK FILE]");
+                game.generatePack(plrCount, "Generatedpack");
+                try {
+                    Players = game.distributePack("Generatedpack", plrCount);
+                    Decided = true;
+                    break;
+                } catch (IOException e) {
+                    HandleException.InvalidPackSizeException(e, plrCount);
+                }
 
-            try {
-                Players = game.distributePack(cardPackName, plrCount);
-            } catch (IOException | IllegalArgumentException exc) {
-                HandleException.FileNotFoundException(exc);
-                System.out.println("Please input a valid filename.");
+            } else if (Decision.equals("2")) {
+                // try to find the provided pack file
+                while (Players == null) {
+                    System.out.println("Please input the name (without extension) of the card pack file, make sure it is located in the same directory as this jar file.");
+                    String cardPackName = Input.nextLine();
 
+                    try {
+                        Players = game.distributePack(cardPackName, plrCount);
+                        Decided = true;
+                        break;
+                    } catch (IOException | IllegalArgumentException exc) {
+                        HandleException.FileNotFoundException(exc);
+                        System.out.println("Please input a valid filename.");
+
+                    }
+
+                }
+            } else {
+                System.out.println("Please choose from either option 1 to auto generate or 2 to provide a pack file (must be located in the same directory as the executable.");
             }
-
-        }*/
-        // auto pass from generated.
-
-        game.generatePack(plrCount, "Generatedpack");
-        try {
-            Players = game.distributePack("Generatedpack", plrCount);
-        } catch (IOException e) {
-            HandleException.InvalidPackSizeException(e, plrCount);
         }
 
 
