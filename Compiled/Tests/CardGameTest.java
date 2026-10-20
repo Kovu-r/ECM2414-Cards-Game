@@ -25,12 +25,14 @@ public class CardGameTest {
     public void setUp() throws Exception {
         game = new CardGame();
         testFileName = "testPack";
+        playerCount = 4;
         game.generatePack(playerCount, testFileName);
     }
 
     @Test
     public void testCreatePlayerThreads() {
         Player[] players = new Player[4];
+
         Thread[] expectedPlayerThread = new Thread[4];
         assertNotEquals(expectedPlayerThread, game.createPlayerThreads(4, players));
     }
@@ -99,7 +101,33 @@ public class CardGameTest {
     }
 
     @Test
-    public void testCleanUp() {
+    public void testCleanUp() throws IOException {
+
+        game.distributePack(testFileName, playerCount);
+
+        CardDeck[] distributedDecks = game.getCardDecks();
+
+        for(CardDeck deck : distributedDecks) {
+            Path FSWritestreamOUT = Path.of("deck" + deck.GetDeckNumber() + "_output.txt");
+
+            Files.deleteIfExists(FSWritestreamOUT); // delete if its found
+
+
+        }
+
+        game.cleanup(); // run cleanup and see if the files are generated correctly.
+
+        for (CardDeck deck : distributedDecks) {
+            Path outputfsstream = Path.of("deck" + deck.GetDeckNumber() + "_output.txt");
+
+            String FSContents = Files.readString(outputfsstream);
+
+            assertTrue("The cleanup program should create " + outputfsstream, Files.exists(outputfsstream)); // check if the file exists
+
+            assertTrue("The file should contain the following header: ", FSContents.startsWith("deck" + deck.GetDeckNumber() + " contents:")); // check if the contents match the required spec output
+
+        }
+
 
     }
 

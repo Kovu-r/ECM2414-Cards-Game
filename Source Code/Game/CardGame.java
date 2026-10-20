@@ -311,7 +311,7 @@ public class CardGame {
         }
 
         System.out.println("The game has been terminated.");
-        System.exit(0); // 0, OK
+        //System.exit(0); // 0, OK
     }
 
 }
